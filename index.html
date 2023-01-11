@@ -3,17 +3,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Eu Vou</title>
 
+<!-- Stylesheets -->
 <link rel="stylesheet" href="style.css" />
+
+<!-- Scripts -->
 <script src="script.js" defer></script>
 
 <main>
   <div class="container">
-    <input class="js-image-input" type="file" id="image-input" />
-    <label
-        class="button button-primary"
-        for="image-input"
-    >Inserir Imagem</label>
+    <form>
+      <input class="js-image-input" type="file" id="image-input" />
+      <label
+          class="button button-primary"
+          for="image-input"
+      >Inserir Imagem</label>
+    </form>
+    <!--
+      The canvas size must match the container size to not cause overflow.
+      The `width` and `height` properties of a canvas can not be set in the CSS
+      stylesheets, otherwise the image can get pixelated or blurry.
+    -->
+    <canvas class="js-canvas" width="900" height="900"></canvas>
   </div>
-  <canvas class="js-canvas"></canvas>
 </main>
+
+<footer>
+  <a
+    href="https://github.com/corridaazulina/eu_vou"
+    target="_blank"
+  >Este projeto é open-source, visite seu código no Github.</a>
+</footer>
 

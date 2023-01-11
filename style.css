@@ -27,6 +27,7 @@ input[type='file'] {
   border-radius: 30px;
   border: none;
   padding: 0.5rem 1rem;
+  font-weight: bold;
 }
 
 .button-primary {
@@ -36,5 +37,13 @@ input[type='file'] {
 
 main {
   margin: 3rem 0;
+}
+
+form {
+  margin-bottom: 3rem;
+}
+
+canvas {
+  border: 1px solid black;
 }
 

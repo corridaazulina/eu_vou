@@ -3,18 +3,19 @@ const $canvas = document.querySelector('.js-canvas');
 const canvasContext = $canvas.getContext('2d');
 
 /**
- * Clear the $canvas element.
+ * Clears any drawing that is already at the $canvas element.
  */
 function clearCanvas() {
-  canvasContext.clearRect(0, 0, $canvas.width, $canvas.height);
+  canvasContext.drawRect(0, 0, $canvas.width, $canvas.height);
 }
 
 /**
- * Creates an URL for a blob that contains an image file passed as argument.
+ * Creates a blob URL for an image file. This will be needed to display the
+ * image in an image element.
  *
- * @param {File} imageFile An image file.
+ * @param {File} imageFile
  *
- * @return {string} URL for the image's blob.
+ * @returns {string} A blob URL that contains the image file.
  */
 function createImageUrl(imageFile) {
   const blob = new Blob([ imageFile ]);
@@ -24,19 +25,29 @@ function createImageUrl(imageFile) {
 }
 
 /**
- * Uses the image given in the $imageInput element to create a image in the
- * $canvas element using the pre made frame.
+ * Uses the image inserted in the $imageInput element to draw an image in the
+ * $canvas element using the pre-made frame.
  */
 function drawCanvas() {
-  const $frame = new Image('./assets/frame.png');
+  const imageInserted = $imageInput.files[0];
+  const imageUrl = createImageUrl(imageInserted);
+  const $image = new Image();
+  $image.src = imageUrl;
 
-  const image = $imageInput.files[0];
-  const imageUrl = createImageUrl(image);
-  const $image = new Image(imageUrl);
+  const $frame = new Image();
+  $frame.src = './assets/frame.png';
 
-  console.log({$frame, $image});
+  // Right now, it is possible that the frame image is loaded before the image
+  // inserted. If this happens the image inserted will be on top of the frame,
+  // which is not the expected behavior. Look into a solution for this issue.
+  $image.addEventListener('load', () => {
+    canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+  });
+
+  $frame.addEventListener('load', () => {
+    canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+  });
 }
 
 $imageInput.addEventListener('input', drawCanvas);
-clearCanvas();
 
