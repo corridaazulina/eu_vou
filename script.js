@@ -1,30 +1,20 @@
 const $imageInput = document.querySelector('.js-image-input');
 const $canvas = document.querySelector('.js-canvas');
 const $downloadButton = document.querySelector('.js-download-button');
+const $container = document.querySelector('.js-container');
 const canvasContext = $canvas.getContext('2d');
-let imagesCounter = 0;
-let downloadUrl;
+/**
+ * This variable contains the URL for a blob that contains the image inserted by
+ * the user. It starts `undefined` but receives a value whenever the user
+ * inserts an image in the page.
+ */
+let imageUrl;
 
 /**
  * Clears any drawing that is already at the $canvas element.
  */
 function clearCanvas() {
-  canvasContext.drawRect(0, 0, $canvas.width, $canvas.height);
-}
-
-/**
- * Creates a blob URL for an image file. This will be needed to display the
- * image in an image element.
- *
- * @param {File} imageFile
- *
- * @returns {string} A blob URL that contains the image file.
- */
-function createImageUrl(imageFile) {
-  const blob = new Blob([ imageFile ]);
-  const url = URL.createObjectURL(blob);
-
-  return url;
+  canvasContext.clearRect(0, 0, $canvas.width, $canvas.height);
 }
 
 /**
@@ -32,12 +22,10 @@ function createImageUrl(imageFile) {
  * $canvas element using the pre-made frame.
  */
 function drawCanvas() {
-  imagesCounter += 1;
+  if (!imageUrl) { return; }
 
-  const imageInserted = $imageInput.files[0];
-  // It is possible that this operation creates multiple unused urls. It is
-  // needed to revoke those urls.
-  const imageUrl = createImageUrl(imageInserted);
+  clearCanvas();
+
   const $image = new Image();
   $image.src = imageUrl;
 
@@ -49,39 +37,46 @@ function drawCanvas() {
   // If the images are not wait for to be loaded, it can causes the issue in
   // which they are not draw in the $canvas element.
   $image.addEventListener('load', () => {
-    canvasContext.drawImage($image, 20, 90, 480, 938);
+    canvasContext.drawImage(
+      $image,
+      $canvas.width * 0.02,
+      $canvas.height * 0.1,
+      $canvas.width * 0.47,
+      $canvas.height * 0.9,
+    );
 
     const $frame = new Image();
     $frame.src = './assets/frame.png';
 
     $frame.addEventListener('load', () => {
       canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
-      enableCanvasDownload();
     });
   });
 }
 
 /**
- * Revokes the last canvas download URL if it exists to avoid creating multiple
- * blobs containing images.
+ * Changes the $canvas element's size to correspond to the $container in width
+ * page.
  */
-function revokeLastCanvasDownloadUrl() {
-  if (downloadUrl) {
-    URL.revokeObjectURL(downloadUrl);
-  }
+function handleResize() {
+  $canvas.width = $container.offsetWidth;
+  $canvas.height = $container.offsetWidth;
+  drawCanvas();
 }
 
 /**
- * Changes the link of the download button to allow the user to download the
- * image that in the $canvas element.
+ * Handles the image input made by the user, by loading the image into a blob,
+ * creating its URL and drawing the canvas with it.
  */
-function enableCanvasDownload() {
-  revokeLastCanvasDownloadUrl();
-  const canvasUrl = $canvas.toDataURL();
-  $downloadButton.href = canvasUrl;
-  $downloadButton.download = `image_${imagesCounter}`;
-  downloadUrl = canvasUrl;
+function handleImageInput() {
+  const imageInserted = $imageInput.files[0];
+  if (imageUrl) {
+    URL.revokeObjectUrl(imageUrl);
+  }
+  imageUrl = URL.createObjectURL(new Blob([ imageInserted ]));
+  drawCanvas();
 }
 
-$imageInput.addEventListener('input', drawCanvas);
+$imageInput.addEventListener('input', handleImageInput);
+window.addEventListener('resize', handleResize);
 
