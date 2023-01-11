@@ -34,19 +34,24 @@ function drawCanvas() {
   const $image = new Image();
   $image.src = imageUrl;
 
-  const $frame = new Image();
-  $frame.src = './assets/frame.png';
-
-  // Right now, it is possible that the frame image is loaded before the image
-  // inserted. If this happens the image inserted will be on top of the frame,
-  // which is not the expected behavior. Look into a solution for this issue.
+  // The $frame image element must be loaded after the image insert has been
+  // loaded into the canvas element, so it can overlap that image.
+  //
+  // For this reason, the code must be inserted inside this event listener.
+  //
+  // If the images are not wait for to be loaded, it can causes the issue in
+  // which they are not draw in the $canvas element.
   $image.addEventListener('load', () => {
-    canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+    canvasContext.drawImage($image, 20, 90, 480, 938);
+
+    const $frame = new Image();
+    $frame.src = './assets/frame.png';
+
+    $frame.addEventListener('load', () => {
+      canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+    });
   });
 
-  $frame.addEventListener('load', () => {
-    canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
-  });
 }
 
 $imageInput.addEventListener('input', drawCanvas);

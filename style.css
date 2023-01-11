@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 :root {
-  --color-primary: hsl(213, 94%, 37%);
+  --color-primary: hsl(220, 100%, 30%);
+  --color-primary-dark: hsl(220, 100%, 11%);
 }
 
 * {
@@ -26,13 +27,19 @@ input[type='file'] {
 .button {
   border-radius: 30px;
   border: none;
-  padding: 0.5rem 1rem;
+  cursor: pointer;
   font-weight: bold;
+  padding: 0.5rem 1rem;
 }
 
 .button-primary {
   background: var(--color-primary);
   color: white;
+  transition: background 200ms;
+}
+
+.button-primary:hover {
+  background: var(--color-primary-dark);
 }
 
 main {

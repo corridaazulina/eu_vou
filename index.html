@@ -12,6 +12,21 @@
 <main>
   <div class="container">
     <form>
+      <!--
+        The image inserted must have, at least, 455 pixels of width and 840
+        pixels of height.
+
+        If the image has a lower width or height, it can get distorted when is
+        resized by the code.
+      -->
+      <div class="attention-message">
+        <h3>Atenção</h3>
+        <p>
+          A imagem inserida deve possuir, ao menos, 455 pixels de largura por 840
+          pixels de altura. Caso a imagem inserida possua largura ou altura menor
+          que essas, a imagem pode ficar distorcida.
+        </p>
+      </div>
       <input class="js-image-input" type="file" id="image-input" />
       <label
           class="button button-primary"
