@@ -1,6 +1,9 @@
 const $imageInput = document.querySelector('.js-image-input');
 const $canvas = document.querySelector('.js-canvas');
+const $downloadButton = document.querySelector('.js-download-button');
 const canvasContext = $canvas.getContext('2d');
+let imagesCounter = 0;
+let downloadUrl;
 
 /**
  * Clears any drawing that is already at the $canvas element.
@@ -29,7 +32,11 @@ function createImageUrl(imageFile) {
  * $canvas element using the pre-made frame.
  */
 function drawCanvas() {
+  imagesCounter += 1;
+
   const imageInserted = $imageInput.files[0];
+  // It is possible that this operation creates multiple unused urls. It is
+  // needed to revoke those urls.
   const imageUrl = createImageUrl(imageInserted);
   const $image = new Image();
   $image.src = imageUrl;
@@ -49,9 +56,31 @@ function drawCanvas() {
 
     $frame.addEventListener('load', () => {
       canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+      enableCanvasDownload();
     });
   });
+}
 
+/**
+ * Revokes the last canvas download URL if it exists to avoid creating multiple
+ * blobs containing images.
+ */
+function revokeLastCanvasDownloadUrl() {
+  if (downloadUrl) {
+    URL.revokeObjectURL(downloadUrl);
+  }
+}
+
+/**
+ * Changes the link of the download button to allow the user to download the
+ * image that in the $canvas element.
+ */
+function enableCanvasDownload() {
+  revokeLastCanvasDownloadUrl();
+  const canvasUrl = $canvas.toDataURL();
+  $downloadButton.href = canvasUrl;
+  $downloadButton.download = `image_${imagesCounter}`;
+  downloadUrl = canvasUrl;
 }
 
 $imageInput.addEventListener('input', drawCanvas);
