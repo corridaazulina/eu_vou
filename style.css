@@ -57,6 +57,10 @@ img {
   background: var(--color-primary-dark);
 }
 
+.download-link {
+  display: none;
+}
+
 main {
   margin: 3rem 0;
 }

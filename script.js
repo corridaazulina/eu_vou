@@ -1,12 +1,20 @@
 const $imageInput = document.querySelector('.js-image-input');
 const $canvas = document.querySelector('.js-canvas');
 const $downloadButton = document.querySelector('.js-download-button');
+const $downloadLink = document.querySelector('.js-download-link');
 const $container = document.querySelector('.js-container');
 const canvasContext = $canvas.getContext('2d');
+/**
+ * This variables stores the number of times the user has inserted an image.
+ * This value is used to rename the download and avoid files with the same name.
+ */
+let imagesCounter = 0;
 /**
  * This variable contains the URL for a blob that contains the image inserted by
  * the user. It starts `undefined` but receives a value whenever the user
  * inserts an image in the page.
+ *
+ * @type {string}
  */
 let imageUrl;
 
@@ -18,65 +26,100 @@ function clearCanvas() {
 }
 
 /**
+ * Draws the image inserted by the user in the $canvas element. The action is
+ * async because it is needed to wait the image be loaded before draw it.
+ *
+ * @async
+ */
+async function drawImage() {
+  return new Promise((resolve) => {
+    const $image = new Image();
+    $image.src = imageUrl;
+    $image.addEventListener('load', () => {
+      canvasContext.drawImage(
+        $image,
+        $canvas.width * 0.02,
+        $canvas.height * 0.1,
+        $canvas.width * 0.47,
+        $canvas.height * 0.9,
+      );
+      resolve();
+    })
+  });
+}
+
+/**
+ * Draws the frame image in the $canvas element. This action is async because it
+ * is needed to wait the image be loaded before draw it.
+ *
+ * @async
+ */
+async function drawFrame() {
+  return new Promise((resolve) => {
+    const $frame = new Image();
+    $frame.src = './assets/frame.png';
+    $frame.addEventListener('load', () => {
+      canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
+      resolve();
+    })
+  });
+}
+
+/**
  * Uses the image inserted in the $imageInput element to draw an image in the
  * $canvas element using the pre-made frame.
  */
-function drawCanvas() {
+async function drawCanvas() {
   if (!imageUrl) { return; }
 
   clearCanvas();
-
-  const $image = new Image();
-  $image.src = imageUrl;
-
-  // The $frame image element must be loaded after the image insert has been
-  // loaded into the canvas element, so it can overlap that image.
-  //
-  // For this reason, the code must be inserted inside this event listener.
-  //
-  // If the images are not wait for to be loaded, it can causes the issue in
-  // which they are not draw in the $canvas element.
-  $image.addEventListener('load', () => {
-    canvasContext.drawImage(
-      $image,
-      $canvas.width * 0.02,
-      $canvas.height * 0.1,
-      $canvas.width * 0.47,
-      $canvas.height * 0.9,
-    );
-
-    const $frame = new Image();
-    $frame.src = './assets/frame.png';
-
-    $frame.addEventListener('load', () => {
-      canvasContext.drawImage($frame, 0, 0, $canvas.width, $canvas.height);
-    });
-  });
+  await drawImage();
+  await drawFrame();
 }
 
 /**
  * Changes the $canvas element's size to correspond to the $container in width
  * page.
  */
-function handleResize() {
+async function handleResize() {
   $canvas.width = $container.offsetWidth;
   $canvas.height = $container.offsetWidth;
-  drawCanvas();
+  await drawCanvas();
 }
 
 /**
- * Handles the image input made by the user, by loading the image into a blob,
+ * Handles the image input made by the user by loading the image into a blob,
  * creating its URL and drawing the canvas with it.
  */
-function handleImageInput() {
+async function handleImageInput() {
+  imagesCounter += 1;
   const imageInserted = $imageInput.files[0];
   if (imageUrl) {
     URL.revokeObjectUrl(imageUrl);
   }
   imageUrl = URL.createObjectURL(new Blob([ imageInserted ]));
-  drawCanvas();
+  await drawCanvas();
+}
+
+/**
+ * Handles the download of the image by creating an URL with image in its full
+ * size.
+ */
+async function handleDownload() {
+  if (!imageUrl) { return; }
+  $canvas.width = 1000;
+  $canvas.height = 1000;
+  await drawCanvas();
+  const downloadUrl = $canvas.toDataURL();
+  $downloadLink.href = downloadUrl;
+  $downloadLink.download = `image_${imagesCounter}`;
+  $downloadLink.click();
+  URL.revokeObjectURL(downloadUrl);
+  handleResize();
 }
 
 $imageInput.addEventListener('input', handleImageInput);
+$downloadButton.addEventListener('pointerdown', handleDownload);
 window.addEventListener('resize', handleResize);
+handleResize();
 
